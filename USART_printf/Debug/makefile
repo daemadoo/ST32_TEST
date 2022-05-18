@@ -60,8 +60,8 @@ all: main-build
 main-build: USART_printf.elf secondary-outputs
 
 # Tool invocations
-USART_printf.elf USART_printf.map: $(OBJS) $(USER_OBJS) /Users/yangsanghyun/STM32CubeIDE/workspace_1.9.0/USART_printf/STM32F103RBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "USART_printf.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"/Users/yangsanghyun/STM32CubeIDE/workspace_1.9.0/USART_printf/STM32F103RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="USART_printf.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+USART_printf.elf USART_printf.map: $(OBJS) $(USER_OBJS) /Users/yangsanghyun/STM32CubeIDE/workspace_1.9.0/ST32_TEST/USART_printf/STM32F103RBTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "USART_printf.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m3 -T"/Users/yangsanghyun/STM32CubeIDE/workspace_1.9.0/ST32_TEST/USART_printf/STM32F103RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="USART_printf.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
