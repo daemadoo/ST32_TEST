@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,7 +44,9 @@
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+const float AVG_SLOPE = 4.3E-03;
+const float V25 = 1.43;
+const float ADC_TO_VOLT = 3.3 / 4096;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -58,7 +60,29 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#ifdef __GNUC__
+/* With GCC, small printf (option LD Linker->Libraries->Small printf
+   set to 'Yes') calls __io_putchar() */
+#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
 
+/**
+  * @brief  Retargets the C library printf function to the USART.
+  * @param  None
+  * @retval None
+  */
+PUTCHAR_PROTOTYPE
+{
+  /* Place your implementation of fputc here */
+  /* e.g. write a character to the USART1 and Loop until the end of transmission */
+  if (ch == '\n')
+    HAL_UART_Transmit (&huart2, (uint8_t*) "\r", 1, 0xFFFF);
+  	HAL_UART_Transmit (&huart2, (uint8_t*) &ch, 1, 0xFFFF);
+
+  return ch;
+}
 /* USER CODE END 0 */
 
 /**
@@ -97,11 +121,46 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+  /* Start calibration */
+  if (HAL_ADCEx_Calibration_Start (&hadc1) != HAL_OK){
+	  Error_Handler ();
+  }
+
+  /* Start the conversion process */
+  if (HAL_ADC_Start (&hadc1) != HAL_OK) {
+	  Error_Handler ();
+  }
+
+  uint16_t adc1;
+
+  float vSense; // sensor's output voltage [V]
+  float temp;   // sensor's temperature [°C]
+
   while (1)
   {
+	  HAL_ADC_PollForConversion (&hadc1, 1000);
+	  adc1 = HAL_ADC_GetValue (&hadc1);
+	  // printf("ADC1_temperature: %d \n", adc1);
+
+      /*
+       * Reference Manual & Datasheet
+       *
+       * Temperature (in °C) = {(V25 - VSENSE) / Avg_Slope} + 25.
+       * Where,
+       * V25 = VSENSE value for 25°C and
+       * Avg_Slope = Average Slope for curve between Temperature vs. VSENSE
+       * (given in mV/°C or uV/°C)
+       */
+      vSense = adc1 * ADC_TO_VOLT;
+      temp = (V25 - vSense) / AVG_SLOPE + 25.0;
+      printf ("temperature: %d, %f \n", adc1, temp);
+      /* USER CODE END WHILE */
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+      HAL_Delay (100);
   }
   /* USER CODE END 3 */
 }
